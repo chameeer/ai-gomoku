@@ -72,6 +72,51 @@ def brain_end():
 def brain_about():
 	pp.pipeOut(pp.infotext)
 
+
+def value(node, alpha, beta):
+	## Begin your code
+	if node.rule == 'max':
+		return maxValue(node, alpha, beta)
+	else:
+		return minValue(node, alpha, beta)
+
+
+## End your code
+
+
+def maxValue(node, alpha, beta):
+	## Begin your code
+	if node.isLeaf:
+		return node.value
+	val = float("-inf")
+	for action in node.successor:
+		# !!!
+		action.visited = True
+		val = max(val, minValue(action, alpha, beta))
+		if val >= beta:
+			return val
+		alpha = max(alpha, val)
+	return val
+
+
+## End your code
+
+
+def minValue(node, alpha, beta):
+	## Begin your code
+	if node.isLeaf:
+		return node.value
+	val = float("inf")
+	for action in node.successor:
+		# !!!
+		action.visited = True
+		val = min(val, maxValue(action, alpha, beta))
+		if val <= alpha:
+			return val
+		beta = min(beta, val)
+	return val
+
+
 if DEBUG_EVAL:
 	import win32gui
 	def brain_eval(x, y):
