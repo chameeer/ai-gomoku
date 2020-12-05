@@ -37,10 +37,8 @@ def type_value(types):
 # compute the number of types of a given board
 # 已完成
 def board_type_count(board, turn):
-    #height = pp.height
-    #width = pp.width
-    height = 20
-    width = 20
+    height = pp.height
+    width = pp.width
     if turn == 'my':
         M = 1
         P = 2
