@@ -1,6 +1,6 @@
 # 判断棋盘上的棋型（20*20）并计算相应的值函数
 
-# import pisqpipe as pp
+import pisqpipe as pp
 
 # values of type
 # 待调整
