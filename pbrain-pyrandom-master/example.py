@@ -153,7 +153,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
 	'''
 
     node = Node(ruleForPlayers=ruleOfPlayers, action=action)
-    depth = 6
+    depth = 4
     successors = []
     if probOfPosition == None:
         probOfPosition = probable_position(board)
@@ -262,7 +262,7 @@ def renew_probable_position(action, probable_list):
 
 def pruning_brain():
     try:
-        max_depth = 6
+        max_depth = 2
 
         root_node = constructTree(max_depth, board, 1, None)
         if root_node is None:
