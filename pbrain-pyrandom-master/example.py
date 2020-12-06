@@ -1,5 +1,6 @@
 import itertools
 import random
+import copy
 import pisqpipe as pp
 from pisqpipe import DEBUG_EVAL, DEBUG
 import board_evaluate as be
@@ -40,7 +41,7 @@ def brain_my(x, y):
 
 def brain_opponents(x, y):
     if isFree(x, y):
-        board[x][y] = 2
+        board[x][y] = 0
     else:
         pp.pipeOut("ERROR opponents's move [{},{}]".format(x, y))
 
@@ -56,7 +57,7 @@ def brain_takeback(x, y):
     if pp.width > x >= 0 != board[x][y] and 0 <= y < pp.height:
         board[x][y] = 0
         return 0
-    return 2
+    return 0
 
 
 def brain_turn():
@@ -95,7 +96,6 @@ class Node:
         self.successor = successor
         self.isLeaf = isLeaf
         self.value = value
-        self.visited = False
         self.action = action
 
 
@@ -163,15 +163,15 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
     if n == 1:
         if len(probOfPosition) < depth:
             for pos in probOfPosition:
-                board_copy = [[board[x][y] for y in range(pp.height)] for x in range(pp.width)]
+                board_copy = copy.deepcopy(board)
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
                 temp_value = be.evaluate(board_copy)
                 successors.append(
-                    Node(ruleOfPlayers=1 - ruleOfPlayers, isLeaf=True, value=temp_value,
-                         action=pos))  # TODO: need to delete
+                    Node(ruleOfPlayers= - ruleOfPlayers, isLeaf=True, value=temp_value,
+                         action=pos))
         else:
             for pos in probOfPosition:
-                board_copy = [[board[x][y] for y in range(pp.height)] for x in range(pp.width)]
+                board_copy = copy.deepcopy(board)
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
                 temp_value = be.evaluate(board_copy)
                 top_list.append(temp_value)
@@ -179,32 +179,32 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
             temp_list.sort(reverse=True)
             for v in temp_list[0:depth]:
                 pos = probOfPosition[top_list.index(v)]
-                successors.append(Node(ruleForPlayers=1 - ruleOfPlayers, isLeaf=True, value=v, action=pos))
+                successors.append(Node(ruleForPlayers= - ruleOfPlayers, isLeaf=True, value=v, action=pos))
 
     else:
         if len(probOfPosition) < depth:
             for pos in probOfPosition:
                 # i += 1
                 # print pos, 'else called', i
-                board_copy = [[board[x][y] for y in range(pp.height)] for x in range(pp.width)]
+                board_copy = copy.deepcopy(board)
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
                 # print board_copy
                 successors.append(
-                    constructTree(n - 1, board_copy, 1 - ruleOfPlayers, pos,
+                    constructTree(n - 1, board_copy, - ruleOfPlayers, pos,
                                   renew_probable_position(pos, probOfPosition)))
         else:
             for pos in probOfPosition:
-                board_copy = [[board[x][y] for y in range(pp.height)] for x in range(pp.width)]
+                board_copy = copy.deepcopy(board)
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
                 top_list.append(be.evaluate(board_copy))
             temp_list = top_list[:]
             temp_list.sort(reverse=True)
             for v in temp_list[0:depth]:
                 pos = probOfPosition[top_list.index(v)]
-                board_copy = [[board[x][y] for y in range(pp.height)] for x in range(pp.width)]
+                board_copy = copy.deepcopy(board)
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
                 successors.append(
-                    constructTree(n - 1, board_copy, 1 - ruleOfPlayers, pos,
+                    constructTree(n - 1, board_copy, - ruleOfPlayers, pos,
                                   renew_probable_position(pos, probOfPosition)))
     node.successor = successors
     return node
@@ -276,6 +276,7 @@ def pruning_brain():
     except:
         logTraceBack()
 
+
 if DEBUG_EVAL:
     import win32gui
 
@@ -297,22 +298,25 @@ if DEBUG_EVAL:
 # define a file for logging ...
 DEBUG_LOGFILE = "/tmp/pbrain-pyrandom.log"
 # ...and clear it initially
-with open(DEBUG_LOGFILE,"w") as f:
-	pass
+with open(DEBUG_LOGFILE, "w") as f:
+    pass
+
 
 # define a function for writing messages to the file
 def logDebug(msg):
-	with open(DEBUG_LOGFILE,"a") as f:
-		f.write(msg+"\n")
-		f.flush()
+    with open(DEBUG_LOGFILE, "a") as f:
+        f.write(msg + "\n")
+        f.flush()
+
 
 # define a function to get exception traceback
 def logTraceBack():
-	import traceback
-	with open(DEBUG_LOGFILE,"a") as f:
-		traceback.print_exc(file=f)
-		f.flush()
-	raise
+    import traceback
+    with open(DEBUG_LOGFILE, "a") as f:
+        traceback.print_exc(file=f)
+        f.flush()
+    raise
+
 
 # use logDebug wherever
 # use try-except (with logTraceBack in except branch) to get exception info
