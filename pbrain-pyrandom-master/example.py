@@ -156,7 +156,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
     depth = 4
     successors = []
     if probOfPosition == None:
-        probOfPosition = probOfPosition(board)
+        probOfPosition = probable_position(board)
         if probOfPosition == None:
             return None
     top_list = []
@@ -177,7 +177,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
                 top_list.append(temp_value)
             temp_list = top_list[:]
             temp_list.sort(reverse=True)
-            for v in temp_list[0:expend_num]:
+            for v in temp_list[0:depth]:
                 pos = probOfPosition[top_list.index(v)]
                 successors.append(Node(ruleForPlayers=1 - ruleOfPlayers, isLeaf=True, value=v, action=pos))
 
@@ -199,7 +199,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
                 top_list.append(be.evaluate(board_copy))
             temp_list = top_list[:]
             temp_list.sort(reverse=True)
-            for v in temp_list[0:expend_num]:
+            for v in temp_list[0:depth]:
                 pos = probOfPosition[top_list.index(v)]
                 board_copy = [[board[x][y] for y in range(pp.height)] for x in range(pp.width)]
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
@@ -331,7 +331,7 @@ pp.brain_my = brain_my
 pp.brain_opponents = brain_opponents
 pp.brain_block = brain_block
 pp.brain_takeback = brain_takeback
-pp.brain_turn = pruning_brain()
+pp.brain_turn = pruning_brain
 pp.brain_end = brain_end
 pp.brain_about = brain_about
 if DEBUG_EVAL:
