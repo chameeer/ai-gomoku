@@ -41,7 +41,7 @@ def brain_my(x, y):
 
 def brain_opponents(x, y):
     if isFree(x, y):
-        board[x][y] = 0
+        board[x][y] = 2
     else:
         pp.pipeOut("ERROR opponents's move [{},{}]".format(x, y))
 
@@ -153,7 +153,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
 	'''
 
     node = Node(ruleForPlayers=ruleOfPlayers, action=action)
-    depth = 4
+    depth = 6
     successors = []
     if probOfPosition == None:
         probOfPosition = probable_position(board)
@@ -167,7 +167,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
                 temp_value = be.evaluate(board_copy)
                 successors.append(
-                    Node(ruleOfPlayers= - ruleOfPlayers, isLeaf=True, value=temp_value,
+                    Node(ruleOfPlayers= 3 - ruleOfPlayers, isLeaf=True, value=temp_value,
                          action=pos))
         else:
             for pos in probOfPosition:
@@ -179,7 +179,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
             temp_list.sort(reverse=True)
             for v in temp_list[0:depth]:
                 pos = probOfPosition[top_list.index(v)]
-                successors.append(Node(ruleForPlayers= - ruleOfPlayers, isLeaf=True, value=v, action=pos))
+                successors.append(Node(ruleForPlayers= 3 - ruleOfPlayers, isLeaf=True, value=v, action=pos))
 
     else:
         if len(probOfPosition) < depth:
@@ -190,7 +190,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
                 # print board_copy
                 successors.append(
-                    constructTree(n - 1, board_copy, - ruleOfPlayers, pos,
+                    constructTree(n - 1, board_copy,3 - ruleOfPlayers, pos,
                                   renew_probable_position(pos, probOfPosition)))
         else:
             for pos in probOfPosition:
@@ -204,7 +204,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
                 board_copy = copy.deepcopy(board)
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
                 successors.append(
-                    constructTree(n - 1, board_copy, - ruleOfPlayers, pos,
+                    constructTree(n - 1, board_copy,3 - ruleOfPlayers, pos,
                                   renew_probable_position(pos, probOfPosition)))
     node.successor = successors
     return node
@@ -262,16 +262,16 @@ def renew_probable_position(action, probable_list):
 
 def pruning_brain():
     try:
-        max_depth = 1
+        max_depth = 6
 
         root_node = constructTree(max_depth, board, 1, None)
         if root_node is None:
-            logDebug()
+            logDebug("This is the log when root node is None")
             pp.do_mymove(10, 10)
         else:
             max_value, action = value(root_node, float("-inf"), float("inf"))
             # assert action is not None
-            logDebug()
+            logDebug("This is the log when root node is not None")
             pp.do_mymove(action[0], action[1])
     except:
         logTraceBack()
