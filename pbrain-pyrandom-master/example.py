@@ -261,16 +261,20 @@ def renew_probable_position(action, probable_list):
 
 
 def pruning_brain():
-    max_depth = 1
+    try:
+        max_depth = 1
 
-    root_node = constructTree(max_depth, board, 1, None)
-    if root_node is None:
-        pp.do_mymove(10, 10)
-    else:
-        max_value, action = value(root_node, float("-inf"), float("inf"))
-        # assert action is not None
-        pp.do_mymove(action[0], action[1])
-
+        root_node = constructTree(max_depth, board, 1, None)
+        if root_node is None:
+            logDebug()
+            pp.do_mymove(10, 10)
+        else:
+            max_value, action = value(root_node, float("-inf"), float("inf"))
+            # assert action is not None
+            logDebug()
+            pp.do_mymove(action[0], action[1])
+    except:
+        logTraceBack()
 
 if DEBUG_EVAL:
     import win32gui
@@ -289,7 +293,7 @@ if DEBUG_EVAL:
 # A possible way how to debug brains.
 # To test it, just "uncomment" it (delete enclosing """)
 ######################################################################
-"""
+
 # define a file for logging ...
 DEBUG_LOGFILE = "/tmp/pbrain-pyrandom.log"
 # ...and clear it initially
@@ -313,15 +317,15 @@ def logTraceBack():
 # use logDebug wherever
 # use try-except (with logTraceBack in except branch) to get exception info
 # an example of problematic function
-def brain_turn():
-	logDebug("some message 1")
-	try:
-		logDebug("some message 2")
-		1. / 0. # some code raising an exception
-		logDebug("some message 3") # not logged, as it is after error
-	except:
-		logTraceBack()
-"""
+# def brain_turn():
+# 	logDebug("some message 1")
+# 	try:
+# 		logDebug("some message 2")
+# 		1. / 0. # some code raising an exception
+# 		logDebug("some message 3") # not logged, as it is after error
+# 	except:
+# 		logTraceBack()
+
 ######################################################################
 
 # "overwrites" functions in pisqpipe module
