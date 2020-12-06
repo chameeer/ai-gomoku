@@ -223,7 +223,7 @@ def item_type_count(item, my, type_list):
             elif len(strip_item) == 5:
                 type_list['BROKEN_FOUR'] += 1
             else:
-                long_item_type_count(item, my)
+                long_item_type_count(item, my, type_list)
 
     if num == 5:
         if length == 5:
@@ -232,13 +232,13 @@ def item_type_count(item, my, type_list):
             if len(strip_item) == 5:
                 type_list['FIVE'] += 1
             else:
-                long_item_type_count(item, my)
+                long_item_type_count(item, my, type_list)
 
     if num >= 6:
-        long_item_type_count(item, my)
+        long_item_type_count(item, my, type_list)
 
 # 未完成(4,5,6)
-def long_item_type_count(item, my):
+def long_item_type_count(item, my, type_list):
     # count the type number of items whose length is more than 5 and have more than 3 '1'# 未完成(4,5,6)
     #
     # 111001,110011,110101
@@ -270,7 +270,7 @@ def long_item_type_count(item, my):
         return 0
     for i in three:
         if i in item:
-            type_list['THREE'] += item.count(three)
+            type_list['THREE'] += item.count(i)
     for i in broken_three2:
         if i in item:
             type_list['BROKEN_THREE'] += item.count(i)
