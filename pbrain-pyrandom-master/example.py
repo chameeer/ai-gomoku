@@ -57,7 +57,7 @@ def brain_takeback(x, y):
     if pp.width > x >= 0 != board[x][y] and 0 <= y < pp.height:
         board[x][y] = 0
         return 0
-    return 0
+    return 2
 
 
 def brain_turn():
