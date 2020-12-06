@@ -36,8 +36,8 @@ def type_value(types):
     type2 = types['BROKEN_THREE'] + types['TWO']
     if type1 >= 2:  # 同时出现冲四和活三
         value += values['FOUR']*(type1-1)
-    if type2 >= 2:  # 同时出现眠三和活二
-        value += values['THREE']*(type2-1)
+    #if type2 >= 2:  # 同时出现眠三和活二
+    #    value += values['THREE']*(type2-1)
     return value
 
 # compute the number of types of a given board
