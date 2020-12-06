@@ -32,6 +32,12 @@ def type_value(types):
     value = 0
     for type, num in types.items():
         value += num * values[type]
+    type1 = types['BROKEN_FOUR'] + types['THREE']
+    type2 = types['BROKEN_THREE'] + types['TWO']
+    if type1 >= 2:  # 同时出现冲四和活三
+        value += values['FOUR']*(type1-1)
+    if type2 >= 2:  # 同时出现眠三和活二
+        value += values['THREE']*(type2-1)
     return value
 
 # compute the number of types of a given board
@@ -249,17 +255,30 @@ def long_item_type_count(item, my):
     six = my * 6
     five = my * 5
     four = '0' + my * 4 + '0'
-    three = '0' + my * 3 + '0'
+    three = ['0' + my * 3 + '0' + '0', '0' + my*2 + '0' + my + '0']
+    broken_three1 = [my * 3, my * 2 + '0' + my, my + '0' + my * 2]
+    broken_three2 = [my * 2 + '0' * 2 + my, my + '0' + my + '0' + my]
+
     if six in item:
-        type_list['SIX'] += 1
+        type_list['SIX'] += item.count(six)
         return 0
     if five in item:
-        type_list['FIVE'] += 1
+        type_list['FIVE'] += item.count(five)
         return 0
     if four in item:
-        type_list['FOUR'] += 1
-    if three in item:
-        type_list['THREE'] += 1
+        type_list['FOUR'] += item.count(four)
+        return 0
+    for i in three:
+        if i in item:
+            type_list['THREE'] += item.count(three)
+    for i in broken_three2:
+        if i in item:
+            type_list['BROKEN_THREE'] += item.count(i)
+    for i in broken_three1:
+        if item.startswith(i):
+            type_list['BROKEN_THREE'] += 1
+        if item.endswith(i):
+            type_list['BROKEN_THREE'] += 1
 
 # Five(连五): 11111
 # Straight Four(活四): 011110
