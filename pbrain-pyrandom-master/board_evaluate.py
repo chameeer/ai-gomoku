@@ -23,7 +23,7 @@ values = {'SIX':SIX, 'FIVE':FIVE, 'FOUR':FOUR, 'BROKEN_FOUR':BROKEN_FOUR, 'THREE
 def evaluate(board):
     type_my = board_type_count(board, 'my')
     type_opponent = board_type_count(board, 'opponent')
-    value = type_value(type_my) - type_value(type_opponent)
+    value = type_value(type_my) - type_value(type_opponent)*2
     return value
 
 # compute the value of given types
