@@ -284,20 +284,17 @@ def pre_process(board):
 
 
 def pruning_brain():
-    try:
-        max_depth = 2
+    max_depth = 2
 
-        root_node = constructTree(max_depth, board, 1, None)
-        if root_node is None:
-            logDebug("This is the log when root node is None")
-            pp.do_mymove(10, 10)
-        else:
-            max_value, action = value(root_node, float("-inf"), float("inf"))
-            # assert action is not None
-            logDebug("This is the log when root node is not None")
-            pp.do_mymove(action[0], action[1])
-    except:
-        logTraceBack()
+    root_node = constructTree(max_depth, board, 1, None)
+    if root_node is None:
+        logDebug("This is the log when root node is None")
+        pp.do_mymove(10, 10)
+    else:
+        max_value, action = value(root_node, float("-inf"), float("inf"))
+        # assert action is not None
+        logDebug("This is the log when root node is not None")
+        pp.do_mymove(action[0], action[1])
 
 
 if DEBUG_EVAL:
@@ -317,28 +314,28 @@ if DEBUG_EVAL:
 # A possible way how to debug brains.
 # To test it, just "uncomment" it (delete enclosing """)
 ######################################################################
-
-# define a file for logging ...
-DEBUG_LOGFILE = "/tmp/pbrain-pyrandom.log"
-# ...and clear it initially
-with open(DEBUG_LOGFILE, "w") as f:
-    pass
-
-
-# define a function for writing messages to the file
-def logDebug(msg):
-    with open(DEBUG_LOGFILE, "a") as f:
-        f.write(msg + "\n")
-        f.flush()
-
-
-# define a function to get exception traceback
-def logTraceBack():
-    import traceback
-    with open(DEBUG_LOGFILE, "a") as f:
-        traceback.print_exc(file=f)
-        f.flush()
-    raise
+#
+# # define a file for logging ...
+# DEBUG_LOGFILE = "/tmp/pbrain-pyrandom.log"
+# # ...and clear it initially
+# with open(DEBUG_LOGFILE, "w") as f:
+#     pass
+#
+#
+# # define a function for writing messages to the file
+# def logDebug(msg):
+#     with open(DEBUG_LOGFILE, "a") as f:
+#         f.write(msg + "\n")
+#         f.flush()
+#
+#
+# # define a function to get exception traceback
+# def logTraceBack():
+#     import traceback
+#     with open(DEBUG_LOGFILE, "a") as f:
+#         traceback.print_exc(file=f)
+#         f.flush()
+#     raise
 
 
 # use logDebug wherever
