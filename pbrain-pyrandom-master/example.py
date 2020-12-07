@@ -167,7 +167,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
                 temp_value = be.evaluate(board_copy)
                 successors.append(
-                    Node(ruleOfPlayers= 3 - ruleOfPlayers, isLeaf=True, value=temp_value,
+                    Node(ruleOfPlayers=3 - ruleOfPlayers, isLeaf=True, value=temp_value,
                          action=pos))
         else:
             for pos in probOfPosition:
@@ -179,7 +179,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
             temp_list.sort(reverse=True)
             for v in temp_list[0:depth]:
                 pos = probOfPosition[top_list.index(v)]
-                successors.append(Node(ruleForPlayers= 3 - ruleOfPlayers, isLeaf=True, value=v, action=pos))
+                successors.append(Node(ruleForPlayers=3 - ruleOfPlayers, isLeaf=True, value=v, action=pos))
 
     else:
         if len(probOfPosition) < depth:
@@ -190,7 +190,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
                 # print board_copy
                 successors.append(
-                    constructTree(n - 1, board_copy,3 - ruleOfPlayers, pos,
+                    constructTree(n - 1, board_copy, 3 - ruleOfPlayers, pos,
                                   renew_probable_position(pos, probOfPosition)))
         else:
             for pos in probOfPosition:
@@ -204,7 +204,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
                 board_copy = copy.deepcopy(board)
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
                 successors.append(
-                    constructTree(n - 1, board_copy,3 - ruleOfPlayers, pos,
+                    constructTree(n - 1, board_copy, 3 - ruleOfPlayers, pos,
                                   renew_probable_position(pos, probOfPosition)))
     node.successor = successors
     return node
@@ -258,6 +258,29 @@ def renew_probable_position(action, probable_list):
         probable_list.remove((x, y))
 
     return probable_list
+
+
+def pre_process(board):
+    probOfPosition = probable_position(board)
+    # 判断是否可以直接形成连五或活四
+    for pos in probOfPosition:
+        board_copy_my = copy.deepcopy(board)
+        board_copy_my[pos[0]][pos[1]] = 1
+        type_list_my = be.board_type_count(board_copy_my, 'my', attack=False)
+
+        board_copy_opponent = copy.deepcopy(board)
+        board_copy_opponent[pos[0]][pos[1]] = 2
+        type_list_opponent = be.board_type_count(board_copy_opponent, 'opponent', attack=False)
+
+        if type_list_my['FIVE'] != 0:
+            return pos[0], pos[1]
+        elif type_list_opponent['FIVE'] != 0 or type_list_opponent['FOUR'] != 0:
+            return pos[0], pos[1]
+        elif type_list_my['FOUR'] != 0:
+            return pos[0], pos[1]
+        else:
+            continue
+    return None
 
 
 def pruning_brain():
@@ -333,6 +356,7 @@ def logTraceBack():
 ######################################################################
 
 # "overwrites" functions in pisqpipe module
+pp.width, pp.height = 20, 20
 pp.brain_init = brain_init
 pp.brain_restart = brain_restart
 pp.brain_my = brain_my

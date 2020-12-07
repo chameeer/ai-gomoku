@@ -1,12 +1,13 @@
 # 判断棋盘上的棋型（20*20）并计算相应的值函数
 
 import pisqpipe as pp
+import copy
 
 # values of type
 # 待调整
-SIX = 1000000
-FIVE = 100000
-FOUR = 10000
+SIX = 10000000
+FIVE = 1000000
+FOUR = 100000
 BROKEN_FOUR = 1000
 THREE = 1000
 BROKEN_THREE = 100
@@ -21,8 +22,8 @@ values = {'SIX':SIX, 'FIVE':FIVE, 'FOUR':FOUR, 'BROKEN_FOUR':BROKEN_FOUR, 'THREE
 # evalute the board
 # 已完成
 def evaluate(board):
-    type_my = board_type_count(board, 'my')
-    type_opponent = board_type_count(board, 'opponent')
+    type_my = board_type_count(board, 'my', attack = True)
+    type_opponent = board_type_count(board, 'opponent', attack = True)
     value = type_value(type_my) - type_value(type_opponent)*2
     return value
 
@@ -42,7 +43,10 @@ def type_value(types):
 
 # compute the number of types of a given board
 # 已完成
-def board_type_count(board, turn):
+# attack = False: 防守
+# attack = True: 进攻
+def board_type_count(board, turn, attack):
+
     height = pp.height
     width = pp.width
     if turn == 'my':
@@ -51,8 +55,8 @@ def board_type_count(board, turn):
     else:
         M = 2
         P = 1
-    types = {'FIVE':0, 'FOUR':0, 'BROKEN_FOUR':0, 'THREE':0, 'BROKEN_THREE':0,
-            'TWO':0, 'BROKEN_TWO':0, 'ONE':0, 'BROKEN_ONE':0}
+    types = {'SIX': 0, 'FIVE': 0, 'FOUR': 0, 'BROKEN_FOUR': 0, 'THREE': 0, 'BROKEN_THREE': 0,
+             'TWO': 0, 'BROKEN_TWO': 0, 'ONE': 0, 'BROKEN_ONE': 0}
     item_list = list()
 
     # search types in row
@@ -115,8 +119,22 @@ def board_type_count(board, turn):
         if len(item) < 5 or item.count(str(M)) == 0:
             continue
         else:
-            item_type_count(item, str(M), types)
+            if attack == True:
+                item_type_count(item, str(M), types)
+            else:
+                item_type_easy_count(item, str(M), types)
     return types
+
+
+# 判断是否可以直接形成连五或活四
+def item_type_easy_count(item, my, type_list):
+    five = my * 5
+    four = '0' + my * 4 + '0'
+    if five in item:
+        type_list['FIVE'] += 1
+    if four in item:
+        type_list['FOUR'] += 1
+
 
 # compute the number of types of a given item
 # 已完成
