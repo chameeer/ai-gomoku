@@ -285,16 +285,19 @@ def pre_process(board):
 
 def pruning_brain():
     max_depth = 2
-
     root_node = constructTree(max_depth, board, 1, None)
-    if root_node is None:
-        logDebug("This is the log when root node is None")
-        pp.do_mymove(10, 10)
+    if pre_process(board) is not None:
+        x, y = pre_process(board)
+        pp.do_mymove(x, y)
     else:
-        max_value, action = value(root_node, float("-inf"), float("inf"))
-        # assert action is not None
-        logDebug("This is the log when root node is not None")
-        pp.do_mymove(action[0], action[1])
+        if root_node is None:
+            # logDebug("This is the log when root node is None")
+            pp.do_mymove(10, 10)
+        else:
+            max_value, action = value(root_node, float("-inf"), float("inf"))
+            # assert action is not None
+            # logDebug("This is the log when root node is not None")
+            pp.do_mymove(action[0], action[1])
 
 
 if DEBUG_EVAL:
