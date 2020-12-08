@@ -6,14 +6,14 @@ import copy
 # values of type
 # 待调整
 SIX = 10000000
-FIVE = 1000000
+FIVE = 2000000
 FOUR = 100000
 BROKEN_FOUR = 1000
 THREE = 1000
-BROKEN_THREE = 100
-TWO = 100
-BROKEN_TWO = 10
-ONE = 10
+BROKEN_THREE = 50
+TWO = 50
+BROKEN_TWO = 5
+ONE = 5
 BROKEN_ONE = 1
 
 values = {'SIX':SIX, 'FIVE':FIVE, 'FOUR':FOUR, 'BROKEN_FOUR':BROKEN_FOUR, 'THREE':THREE, 'BROKEN_THREE':BROKEN_THREE,
@@ -130,10 +130,18 @@ def board_type_count(board, turn, attack):
 def item_type_easy_count(item, my, type_list):
     five = my * 5
     four = '0' + my * 4 + '0'
+    broken_four = [my*3 + '0' +my, my*2+'0'+my*2, my*4+'0', '0'+my*4, my +'0'+my*3]
+    three = ['0' + my * 3 + '00', '0' + my*2 + '0' + my + '0', '00'+my*3+'0']
     if five in item:
         type_list['FIVE'] += 1
     if four in item:
         type_list['FOUR'] += 1
+    for i in three:
+        if i in item:
+            type_list['THREE'] += 1
+    for i in broken_four:
+        if i in item:
+            type_list['THREE'] += 1
 
 
 # compute the number of types of a given item
