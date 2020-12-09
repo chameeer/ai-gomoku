@@ -152,9 +152,9 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
     root = Node(ruleForPlayers = ruleOfPlayers, action = action)
     depth = 4
     successors = []
-    if probOfPosition is None:
-        probOfPosition = probable_position(board)
-        if probOfPosition is None:
+    if not probOfPosition:
+        probOfPosition = probablePosition(board)
+        if not probOfPosition:
             return None
     choice = []
     if n == 1:
@@ -183,7 +183,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
             for position in probOfPosition:
                 board_copy = copy.deepcopy(board)
                 board_copy[position[0]][position[1]] = ruleOfPlayers
-                successors.append(constructTree(n - 1, board_copy, 3 - ruleOfPlayers, position, renew_probable_position(position, probOfPosition)))
+                successors.append(constructTree(n - 1, board_copy, 3 - ruleOfPlayers, position, updateProbablePosition(position, probOfPosition)))
         else:
             # 想了一下这里的代码这样实现其实也有它的意义，就是先从非叶子节点中选取了前四个能使 evaluate 函数值最大的节点（即是一种局部的最优情况），/
             # 然后在这些节点的基础上，再选取他们的下一层节点中的各自最优四个节点（即局部最优基础上的更加优解），应该是有道理的，所以我觉得树不必改了
@@ -192,49 +192,44 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
                 board_copy[position[0]][position[1]] = ruleOfPlayers
                 # 注释掉的是改树的代码，运行起来效果不好，且应该只适用于 n = 2 的情况
                 # If use code comment below will gain a very low effiency, don't know why
-                # temp_node = constructTree(n - 1, board_copy, 3 - ruleOfPlayers, position, probable_position(board_copy))
+                # temp_node = constructTree(n - 1, board_copy, 3 - ruleOfPlayers, position, probablePosition(board_copy))
                 # temp_value, _ = Value(temp_node)
                 temp_value = be.evaluate(board_copy)
                 choice.append(temp_value)
 
-            sortChoice = copy.deepcopy(sorted(choice, reverse=True))
+            sortChoice = copy.deepcopy(sorted(choice, reverse = False))
             for v in sortChoice[0:depth]:
                 pos = probOfPosition[choice.index(v)]
                 board_copy = copy.deepcopy(board)
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
-                successors.append(
-                    constructTree(n - 1, board_copy, 3 - ruleOfPlayers, pos, renew_probable_position(pos, probOfPosition)))
+                successors.append(constructTree(n - 1, board_copy, 3 - ruleOfPlayers, pos, updateProbablePosition(pos, probOfPosition)))
     root.successor = successors
     return root
 
 
-def probable_position(board):
+def probablePosition(board):
     """
-    find all position that may be considered as the next action.
-    exist (x,y) not free, such that |x-pos_x|<3, |y-pos_y|<3
+    |x-pos_x|<3, |y-pos_y|<3
     :param
         board: the current board state
     :return:
         position:  all position may be considered
     """
     probable_list = []
-    scale = 1
     for (pos_x, pos_y) in itertools.product(range(pp.width), range(pp.height)):
         if not board[pos_x][pos_y] == 0:
             continue
-        for (i, j) in itertools.product(range(2 * scale + 1), range(2 * scale + 1)):
-            x, y = pos_x + i - scale, pos_y + j - scale
+        for (i, j) in itertools.product(range(3), range(3)):
+            x, y = pos_x + i - 1, pos_y + j - 1
             if x < 0 or x >= pp.width or y < 0 or y >= pp.height:  # out of the board
                 continue
-            if not board[x][y] == 0:  # a chess is in the region
+            if not board[x][y] == 0:
                 probable_list.append((pos_x, pos_y))
                 break
-    if not probable_list:
-        return None
     return probable_list  # prob_list may be empty
 
 
-def renew_probable_position(action, probable_list):
+def updateProbablePosition(action, probable_list):
     """
     renew the probable list
     :param
@@ -244,11 +239,9 @@ def renew_probable_position(action, probable_list):
         a new list
     """
     x, y = action[0], action[1]
-    scale = 1
-
-    for (i, j) in itertools.product(range(2 * scale + 1), range(2 * scale + 1)):
-        new_x = x + i - scale
-        new_y = y + j - scale
+    for (i, j) in itertools.product(range(3), range(3)):
+        new_x = x + i - 1
+        new_y = y + j - 1
         if (new_x, new_y) not in probable_list:
             probable_list.append((new_x, new_y))
 
@@ -259,7 +252,7 @@ def renew_probable_position(action, probable_list):
 
 
 def pre_process(board):
-    probOfPosition = probable_position(board)
+    probOfPosition = probablePosition(board)
     # 判断是否可以直接形成连五或活四
     for pos in probOfPosition:
         board_copy_my = copy.deepcopy(board)
