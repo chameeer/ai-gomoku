@@ -110,20 +110,15 @@ def maxValue(node, alpha, beta):
     if node.isLeaf:
         return node.value, None
     action = None
-    temp_alpha = alpha
+    newAlpha = alpha
     up_bound = float('-inf')
-    # print 'len', len(node.successor)
     for child in node.successor:
-        # print child.value, temp_alpha, beta
-        if minValue(child, temp_alpha, beta)[0] > up_bound:
-            # print 'hhh', minValue(child, temp_alpha, beta)[0], up_bound
-            # print 'first if called'
-            up_bound = minValue(child, temp_alpha, beta)[0]
-            action = child.action  # renew action
+        if minValue(child, newAlpha, beta)[0] > up_bound:
+            up_bound = minValue(child, newAlpha, beta)[0]
+            action = child.action
         if up_bound >= beta:
-            # print 'second if called'
-            return up_bound, None  # pruning, don't care how to arrive it
-        temp_alpha = max(temp_alpha, up_bound)
+            return up_bound, None
+        newAlpha = max(newAlpha, up_bound)
     return up_bound, action
 
 
@@ -131,15 +126,15 @@ def minValue(node, alpha, beta):
     if node.isLeaf:
         return node.value, None
     action = None
-    temp_beta = beta
+    newBeta = beta
     low_bound = float('inf')
     for child in node.successor:
-        if maxValue(child, alpha, temp_beta)[0] < low_bound:
+        if maxValue(child, alpha, newBeta)[0] < low_bound:
             action = child.action  # renew action
-            low_bound = maxValue(child, alpha, temp_beta)[0]
+            low_bound = maxValue(child, alpha, newBeta)[0]
         if low_bound <= alpha:
             return low_bound, None  # pruning, don't care how to arrive it
-        temp_beta = min(low_bound, temp_beta)
+        newBeta = min(low_bound, newBeta)
     return low_bound, action
 
 
@@ -147,67 +142,70 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
     '''
 	construct a tree using given information, and return the root node
 	:param n:  the height of tree
-	:param tree: the input tree described with list nested structure
-	:param rule: root node's type, 1 for max, 0 for min
+	:param board: the input board described in 2 - dim list form
+	:param ruleOfPlayers: root node's type, 1 for max, 0 for min
+	:param action: take variance actions accorfing to probability
+	:param probOfPosition: all positions that a point can go next
 	:return: root node
 	'''
 
-    node = Node(ruleForPlayers=ruleOfPlayers, action=action)
+    root = Node(ruleForPlayers = ruleOfPlayers, action = action)
     depth = 4
     successors = []
-    if probOfPosition == None:
+    if probOfPosition is None:
         probOfPosition = probable_position(board)
-        if probOfPosition == None:
+        if probOfPosition is None:
             return None
-    top_list = []
+    choice = []
     if n == 1:
         if len(probOfPosition) < depth:
-            for pos in probOfPosition:
+            for position in probOfPosition:
                 board_copy = copy.deepcopy(board)
-                board_copy[pos[0]][pos[1]] = ruleOfPlayers
+                board_copy[position[0]][position[1]] = ruleOfPlayers
                 temp_value = be.evaluate(board_copy)
                 successors.append(
-                    Node(ruleOfPlayers=3 - ruleOfPlayers, isLeaf=True, value=temp_value,
-                         action=pos))
+                    Node(ruleOfPlayers = 3 - ruleOfPlayers, isLeaf=True, value=temp_value,
+                         action=position))
         else:
-            for pos in probOfPosition:
+            for position in probOfPosition:
                 board_copy = copy.deepcopy(board)
-                board_copy[pos[0]][pos[1]] = ruleOfPlayers
+                board_copy[position[0]][position[1]] = ruleOfPlayers
                 temp_value = be.evaluate(board_copy)
-                top_list.append(temp_value)
-            temp_list = top_list[:]
-            temp_list.sort(reverse=True)
-            for v in temp_list[0:depth]:
-                pos = probOfPosition[top_list.index(v)]
-                successors.append(Node(ruleForPlayers=3 - ruleOfPlayers, isLeaf=True, value=v, action=pos))
+                choice.append(temp_value)
+
+            sortChoice = copy.deepcopy(sorted(choice, reverse=True))
+            for val in sortChoice[0:depth]:
+                position = probOfPosition[choice.index(val)]
+                successors.append(Node(ruleForPlayers=3 - ruleOfPlayers, isLeaf=True, value=val, action=position))
 
     else:
         if len(probOfPosition) < depth:
-            for pos in probOfPosition:
-                # i += 1
-                # print pos, 'else called', i
+            for position in probOfPosition:
                 board_copy = copy.deepcopy(board)
-                board_copy[pos[0]][pos[1]] = ruleOfPlayers
-                # print board_copy
-                successors.append(
-                    constructTree(n - 1, board_copy, 3 - ruleOfPlayers, pos,
-                                  renew_probable_position(pos, probOfPosition)))
+                board_copy[position[0]][position[1]] = ruleOfPlayers
+                successors.append(constructTree(n - 1, board_copy, 3 - ruleOfPlayers, position, renew_probable_position(position, probOfPosition)))
         else:
-            for pos in probOfPosition:
+            # 想了一下这里的代码这样实现其实也有它的意义，就是先从非叶子节点中选取了前四个能使 evaluate 函数值最大的节点（即是一种局部的最优情况），/
+            # 然后在这些节点的基础上，再选取他们的下一层节点中的各自最优四个节点（即局部最优基础上的更加优解），应该是有道理的，所以我觉得树不必改了
+            for position in probOfPosition:
                 board_copy = copy.deepcopy(board)
-                board_copy[pos[0]][pos[1]] = ruleOfPlayers
-                top_list.append(be.evaluate(board_copy))
-            temp_list = top_list[:]
-            temp_list.sort(reverse=True)
-            for v in temp_list[0:depth]:
-                pos = probOfPosition[top_list.index(v)]
+                board_copy[position[0]][position[1]] = ruleOfPlayers
+                # 注释掉的是改树的代码，运行起来效果不好，且应该只适用于 n = 2 的情况
+                # If use code comment below will gain a very low effiency, don't know why
+                # temp_node = constructTree(n - 1, board_copy, 3 - ruleOfPlayers, position, probable_position(board_copy))
+                # temp_value, _ = Value(temp_node)
+                temp_value = be.evaluate(board_copy)
+                choice.append(temp_value)
+
+            sortChoice = copy.deepcopy(sorted(choice, reverse=True))
+            for v in sortChoice[0:depth]:
+                pos = probOfPosition[choice.index(v)]
                 board_copy = copy.deepcopy(board)
                 board_copy[pos[0]][pos[1]] = ruleOfPlayers
                 successors.append(
-                    constructTree(n - 1, board_copy, 3 - ruleOfPlayers, pos,
-                                  renew_probable_position(pos, probOfPosition)))
-    node.successor = successors
-    return node
+                    constructTree(n - 1, board_copy, 3 - ruleOfPlayers, pos, renew_probable_position(pos, probOfPosition)))
+    root.successor = successors
+    return root
 
 
 def probable_position(board):
