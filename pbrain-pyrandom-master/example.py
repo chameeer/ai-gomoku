@@ -250,10 +250,9 @@ def updateProbablePosition(action, probable_list):
 
     return probable_list
 
-
+# function to pre process board
 def pre_process(board):
     probOfPosition = probablePosition(board)
-    # 判断是否可以直接形成连五或活四
     for pos in probOfPosition:
         board_copy_my = copy.deepcopy(board)
         board_copy_my[pos[0]][pos[1]] = 1
@@ -266,7 +265,7 @@ def pre_process(board):
         board_copy_opponent = copy.deepcopy(board)
         board_copy_opponent[pos[0]][pos[1]] = 2
         type_list_opponent = be.board_type_count(board_copy_opponent, 'opponent', attack=False)
-        if type_list_opponent['FIVE'] != 0 or type_list_opponent['FOUR'] != 0:
+        if type_list_opponent['FIVE'] != 0:
             return pos[0], pos[1]
         else:
             continue
@@ -275,6 +274,14 @@ def pre_process(board):
         board_copy_my[pos[0]][pos[1]] = 1
         type_list_my = be.board_type_count(board_copy_my, 'my', attack=False)
         if type_list_my['FOUR'] != 0:
+            return pos[0], pos[1]
+        else:
+            continue
+    for pos in probOfPosition:
+        board_copy_opponent = copy.deepcopy(board)
+        board_copy_opponent[pos[0]][pos[1]] = 2
+        type_list_opponent = be.board_type_count(board_copy_opponent, 'opponent', attack=False)
+        if type_list_opponent['FOUR'] != 0:
             return pos[0], pos[1]
         else:
             continue
