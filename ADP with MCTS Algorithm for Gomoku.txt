@@ -1,0 +1,66 @@
+ADP with MCTS Algorithm for Gomoku
+(ADP with MCTS algorithm for Gomoku(2016), Zhentao Tang, Dongbin Zhao, Kun Shao, and Le Lv.)
+
+设计思路
+Combines shallow neural network with Monte Carlo simulation.
+（1）Use neural network to evaluate board situations and obtain reasonable quantities of candidate moves to be taken. 
+（2）Take these candidate moves as root nodes of MCTS and attempt to integrate our move prediction network with MCTS.
+（3）Obtain two results of winning probability respectively from neural network and MCTS. 
+（4）The final wining probability of prediction is the maximum sum in the weighted neural network and MCTS results.
+--------------------------------------------------------------------
+MCTS流程
+Selection, Expansion, Simulation(Fefault Policy), Backpropagation
+--------------------------------------------------------------------
+两种MCTS算法
+1. Heuristic Monte Carlo Tree Search (HMCTS)——【已实现】
+细节：
+（1）simulation times < assigned times
+-> An important feature of MCTS is its estimated value will become more and more accurate with the increase of the simulation times and nodes accessed.
+-> 尽量增加simulation times
+【现在跑的非常慢！！！10次simulation要2-3min，不知道有没有提升的可能性】
+
+（2）Heuristic Knowledge/forced action
+-> Common knowledge for Gomoku players can save more time in simulation than random sampling.
+-> 之前设计的堵路代码
+
+（3）new state st+1 <- f(st, af)
+-> f is a function to generate a new board state from last board state and action
+-> 之前设计的棋盘扩展代码
+
+2. Upper Confidence bounds for Tree (UCT)
+根据论文中的结果，与HMCTS相比效果较差；但在加入ADP后，ADP-UCT的效果好于ADP-HMCTS，且速度更快
+--------------------------------------------------------------------
+关于alpha-beta剪枝的不足
+（1）The first is that static evaluation function always requires complicated artificial design and it needs a lot of time to consider plenty of situations. 
+（2）The second is that it can not learn anything while playing Gomoku. It just obeys the rule which is made before, and could not be improved by playing. 
+（3）The last is that the depth of search is always a bottleneck. The time and space complexities will grow exponentially with search depth, which limits the real-time performance of the game-tree-based solvers.
+
+
+
+Self-teaching adaptive dynamic programming for Gomoku
+(Self-teaching adaptive dynamic programming for Gomoku(2012), Dong- bin Zhao, Zhen Zhang, and Yujie Dai.)
+
+ADP的实现
+1、state variable to evaluate a board
+(1)patterns -> 已有计算代码
+(2)turn(whose move is it) 
+(3)offensive/defensive issue
+2、value function
+A feed-forward three-layered fully connected neural network
+
+
+
+问题：
+updateProbablePosition没有判断边界？
+
+
+
+
+
+
+
+
+
+
+
+
