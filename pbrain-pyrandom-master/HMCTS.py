@@ -7,12 +7,11 @@
 # 对每个动作进行HMCTS【n】次计算reward，最后将value和reward进行加权求和排序
 # （需要调整合适的值的相对大小）（待调整）
 
-import pp
 import random
 import itertools
 import copy
 import time
-#import pisqpipe as pp
+import pisqpipe as pp
 
 simulation_times = 100
 
