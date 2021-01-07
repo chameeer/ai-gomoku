@@ -1,11 +1,16 @@
 # functions of Heuristic Monte Carlo Tree Search (HMCTS)
-# 使用说明：
-# 调用 HMCTS_value(board, pos)，函数其中board和pos为待模拟的棋盘和动作，输出reward
 
-# ADP+HMCTS思路：
+# 使用说明：
+# 调用 HMCTS_value(board, pos)函数，其中board和pos为待模拟的棋盘和动作，输出reward
+
+# ADP + HMCTS 思路：
 # 先用board_evaluation/Neutral Network找出【k】个value最高的动作，
 # 对每个动作进行HMCTS【n】次计算reward，最后将value和reward进行加权求和排序
 # （需要调整合适的值的相对大小）（待调整）
+
+# 待改进：
+# 现在模拟的速度大概为10次模拟3s，还是不能大量模拟（于是参考价值就很小）
+# 已经精简了很多流程，不知道还能不能再提升
 
 import random
 import itertools
