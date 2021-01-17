@@ -4,6 +4,7 @@ import copy
 import pisqpipe as pp
 from pisqpipe import DEBUG_EVAL, DEBUG
 import board_evaluate as be
+import HMCTS
 
 pp.infotext = 'name="pbrain-pyrandom", author="Jan Stransky", version="1.0", country="Czech Republic", www="https://github.com/stranskyjan/pbrain-pyrandom"'
 
@@ -250,49 +251,13 @@ def updateProbablePosition(action, probable_list):
 
     return probable_list
 
-# function to pre process board
-def pre_process(board):
-    probOfPosition = probablePosition(board)
-    for pos in probOfPosition:
-        board_copy_my = copy.deepcopy(board)
-        board_copy_my[pos[0]][pos[1]] = 1
-        type_list_my = be.board_type_count(board_copy_my, 'my', attack=False)
-        if type_list_my['FIVE'] != 0:
-            return pos[0], pos[1]
-        else:
-            continue
-    for pos in probOfPosition:
-        board_copy_opponent = copy.deepcopy(board)
-        board_copy_opponent[pos[0]][pos[1]] = 2
-        type_list_opponent = be.board_type_count(board_copy_opponent, 'opponent', attack=False)
-        if type_list_opponent['FIVE'] != 0:
-            return pos[0], pos[1]
-        else:
-            continue
-    for pos in probOfPosition:
-        board_copy_my = copy.deepcopy(board)
-        board_copy_my[pos[0]][pos[1]] = 1
-        type_list_my = be.board_type_count(board_copy_my, 'my', attack=False)
-        if type_list_my['FOUR'] != 0:
-            return pos[0], pos[1]
-        else:
-            continue
-    for pos in probOfPosition:
-        board_copy_opponent = copy.deepcopy(board)
-        board_copy_opponent[pos[0]][pos[1]] = 2
-        type_list_opponent = be.board_type_count(board_copy_opponent, 'opponent', attack=False)
-        if type_list_opponent['FOUR'] != 0:
-            return pos[0], pos[1]
-        else:
-            continue
-    return None
-
 
 def pruning_brain():
     max_depth = 2
     root_node = constructTree(max_depth, board, 1, None)
-    if pre_process(board) is not None:
-        x, y = pre_process(board)
+    action = HMCTS.pre_process(board, 1)
+    if action is not None:
+        x, y = action
         pp.do_mymove(x, y)
     else:
         if root_node is None:

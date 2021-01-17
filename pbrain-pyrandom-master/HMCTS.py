@@ -1,24 +1,20 @@
 # functions of Heuristic Monte Carlo Tree Search (HMCTS)
-
 # 使用说明：
-# 调用 HMCTS_value(board, pos)函数，其中board和pos为待模拟的棋盘和动作，输出reward
+# 调用 HMCTS_value(board, pos)，函数其中board和pos为待模拟的棋盘和动作，输出reward
 
-# ADP + HMCTS 思路：
+# ADP+HMCTS思路：
 # 先用board_evaluation/Neutral Network找出【k】个value最高的动作，
 # 对每个动作进行HMCTS【n】次计算reward，最后将value和reward进行加权求和排序
 # （需要调整合适的值的相对大小）（待调整）
 
-# 待改进：
-# 现在模拟的速度大概为10次模拟3s，还是不能大量模拟（于是参考价值就很小）
-# 已经精简了很多流程，不知道还能不能再提升
-
+import pp
 import random
 import itertools
 import copy
 import time
-import pisqpipe as pp
+#import pisqpipe as pp
 
-simulation_times = 100
+simulation_times = 200
 
 # 该函数可忽略
 # HMCTS主函数，输入棋盘，返回查询后最优的动作及reward；此函数无法与value函数连接
@@ -61,13 +57,15 @@ def HMCTS_value(board, pos):
 
 
 # 模拟函数，输入棋盘的待估值的动作，返回reward
+# board: 棋盘状态
+# pos: 待模拟的位置
 def simulation(board, pos, turn, probOfPosition):
     board[pos[0]][pos[1]] = turn
     if is_win(board, pos, turn):
         if turn == 1:
             return 1
         else:
-            return -1  # 原论文中取值为0
+            return 0  # 原论文中取值为0
     if is_terminal(board):
         return 0
     action = pre_process(board, 3-turn)
@@ -200,31 +198,34 @@ def pos_type_count(board, pos, turn):
 
 
 # 直接决定下一步的动作（堵/连四/连五）
-def pre_process(board, turn):
+def pre_process(board):
     probOfPosition = probablePosition(board)
-    turn_name = {1: 'my', 2: 'opponent'}
-    rank = {3:0, 4:0}
+    rank = {2:0, 3:0, 4:0}
     for pos in probOfPosition:
         board_copy_my = copy.deepcopy(board)
-        board_copy_my[pos[0]][pos[1]] = turn
-        type_list_my = pos_type_count(board_copy_my, pos, turn_name[turn])
+        board_copy_my[pos[0]][pos[1]] = 1
+        type_list_my = pos_type_count(board_copy_my, pos, 'my')
         if type_list_my['FIVE'] != 0:
             return pos  # rank 1 直接返回
         if type_list_my['FOUR'] != 0:
             rank[3] = pos
 
         board_copy_opponent = copy.deepcopy(board)
-        board_copy_opponent[pos[0]][pos[1]] = 3 - turn
-        type_list_opponent = pos_type_count(board_copy_opponent, pos, turn_name[3 - turn])
+        board_copy_opponent[pos[0]][pos[1]] = 2
+        type_list_opponent = pos_type_count(board_copy_opponent, pos, 'opponent')
         if type_list_opponent['FIVE'] != 0:
-            return pos  # rank 2 直接返回
-        if type_list_my['FOUR'] != 0:
+            rank[2] = pos
+        if type_list_opponent['FOUR'] != 0:
             rank[4] = pos
 
-    if rank[3] != 0:
+    if rank[2] != 0:
+        return rank[2]
+    elif rank[3] != 0:
         return rank[3]
     elif rank[4] != 0:
         return rank[4]
     else:
         return None
+
+
 
