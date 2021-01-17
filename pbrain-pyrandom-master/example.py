@@ -4,7 +4,6 @@ import copy
 import pisqpipe as pp
 from pisqpipe import DEBUG_EVAL, DEBUG
 import board_evaluate as be
-import HMCTS
 
 pp.infotext = 'name="pbrain-pyrandom", author="Jan Stransky", version="1.0", country="Czech Republic", www="https://github.com/stranskyjan/pbrain-pyrandom"'
 
@@ -165,7 +164,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
                 board_copy[position[0]][position[1]] = ruleOfPlayers
                 temp_value = be.evaluate(board_copy)
                 successors.append(
-                    Node(ruleOfPlayers = 3 - ruleOfPlayers, isLeaf=True, value=temp_value,
+                    Node(ruleForPlayers = 3 - ruleOfPlayers, isLeaf=True, value=temp_value,
                          action=position))
         else:
             for position in probOfPosition:
@@ -198,7 +197,7 @@ def constructTree(n, board, ruleOfPlayers, action, probOfPosition=None):
                 temp_value = be.evaluate(board_copy)
                 choice.append(temp_value)
 
-            sortChoice = copy.deepcopy(sorted(choice, reverse = False))
+            sortChoice = copy.deepcopy(sorted(choice, reverse = True))
             for v in sortChoice[0:depth]:
                 pos = probOfPosition[choice.index(v)]
                 board_copy = copy.deepcopy(board)
@@ -243,7 +242,7 @@ def updateProbablePosition(action, probable_list):
     for (i, j) in itertools.product(range(3), range(3)):
         new_x = x + i - 1
         new_y = y + j - 1
-        if (new_x, new_y) not in probable_list:
+        if (new_x, new_y) not in probable_list and valid(new_x) and valid(new_y):
             probable_list.append((new_x, new_y))
 
     if (x, y) in probable_list:
@@ -252,12 +251,97 @@ def updateProbablePosition(action, probable_list):
     return probable_list
 
 
+# 判断坐标是否在棋盘内（update修改）
+def valid(x):
+    if x >= 0 and x <= pp.height-1:
+        return True
+    else:
+        return False
+
+
+# 计算一个棋子周围的棋型（five、four）
+def pos_type_count(board, pos, turn):
+    height = pp.height
+    width = pp.width
+    if turn == 'my':
+        five = '11111'
+        four = '011110'
+    else:
+        five = '22222'
+        four = '022220'
+    types = {'FIVE': 0, 'FOUR': 0}
+    item_list = list()
+
+    # search types in row
+    row = ''
+    for x in range(max(0, pos[1] - 4), min(width, pos[1] + 5)):
+        row += str(board[pos[0]][x])
+    item_list.append(row)
+
+    # search types in column
+    col = ''
+    for y in range(max(0, pos[0] - 4), min(height, pos[0] + 5)):
+        col += str(board[y][pos[1]])
+    item_list.append(col)
+
+    # search types in diagonal
+    row1 = ''
+    row2 = ''
+    for k in range(-4, 5):
+        x1 = pos[0]+k
+        y1 = pos[1]+k
+        if valid(x1) and valid(y1):
+            row1 += str(board[x1][y1])
+        x2 = pos[0] + k
+        y2 = pos[1] - k
+        if valid(x2) and valid(y2):
+            row2 += str(board[x2][y2])
+    item_list.append(row1)
+    item_list.append(row2)
+
+    for item in item_list:
+        if five in item:
+            types['FIVE'] += 1
+        if four in item:
+            types['FOUR'] += 1
+
+    return types
+
+
+# 直接决定下一步的动作（堵/连四/连五）
+def pre_process(board):
+    probOfPosition = probablePosition(board)
+    rank = {3:0, 4:0}
+    for pos in probOfPosition:
+        board_copy_my = copy.deepcopy(board)
+        board_copy_my[pos[0]][pos[1]] = 1
+        type_list_my = pos_type_count(board_copy_my, pos, 'my')
+        if type_list_my['FIVE'] != 0:
+            return pos  # rank 1 直接返回
+        if type_list_my['FOUR'] != 0:
+            rank[3] = pos
+
+        board_copy_opponent = copy.deepcopy(board)
+        board_copy_opponent[pos[0]][pos[1]] = 2
+        type_list_opponent = pos_type_count(board_copy_opponent, pos, 'opponent')
+        if type_list_opponent['FIVE'] != 0:
+            return pos  # rank 2 直接返回
+        if type_list_my['FOUR'] != 0:
+            rank[4] = pos
+
+    if rank[3] != 0:
+        return rank[3]
+    elif rank[4] != 0:
+        return rank[4]
+    else:
+        return None
+
+
 def pruning_brain():
     max_depth = 2
     root_node = constructTree(max_depth, board, 1, None)
-    action = HMCTS.pre_process(board, 1)
-    if action is not None:
-        x, y = action
+    if pre_process(board) is not None:
+        x, y = pre_process(board)
         pp.do_mymove(x, y)
     else:
         if root_node is None:
