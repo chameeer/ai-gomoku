@@ -4,12 +4,13 @@
 # 使用说明：
 # 调用 UCT(board, action)，函数其中board和action为待模拟的棋盘和动作，输出reward
 
+import pp
 import random
 import itertools
 import copy
 import time
 import math
-import pisqpipe as pp
+# import pisqpipe as pp
 
 simulation_times = 200
 
@@ -107,11 +108,11 @@ def simulation(board, pos, turn, probOfPosition):
         return 0
     action = pre_process(board, 3-turn)
     if action is not None:  # 可以直接决定下一步的动作（堵/连四/连五）
-        updateProbablePosition(action, probOfPosition)
+        updateProbablePosition(action, probOfPosition, board)
         return simulation(board, action, 3-turn, probOfPosition)
     else:  # 随机从可以选择的动作中选一个
         action = random.sample(probOfPosition, 1)[0]
-        updateProbablePosition(action, probOfPosition)
+        updateProbablePosition(action, probOfPosition, board)
         return simulation(board, action, 3-turn, probOfPosition)
 
 
@@ -165,7 +166,7 @@ def probablePosition(board):
 
 
 # 更新动作
-def updateProbablePosition(action, probable_list):
+def updateProbablePosition(action, probable_list, board):
     """
     renew the probable list
     :param
@@ -178,7 +179,7 @@ def updateProbablePosition(action, probable_list):
     for (i, j) in itertools.product(range(3), range(3)):
         new_x = x + i - 1
         new_y = y + j - 1
-        if (new_x, new_y) not in probable_list and valid(new_x) and valid(new_y):
+        if (new_x, new_y) not in probable_list and valid(new_x) and valid(new_y) and board[new_x][new_y] == 0:
             probable_list.append((new_x, new_y))
 
     if (x, y) in probable_list:
@@ -243,21 +244,22 @@ def pos_type_count(board, pos, turn):
 
 
 # 直接决定下一步的动作（堵/连四/连五）
-def pre_process(board):
+def pre_process(board, turn):
     probOfPosition = probablePosition(board)
-    rank = {2:0, 3:0, 4:0}
+    turn_name = {1: 'my', 2: 'opponent'}
+    rank = {2: 0, 3: 0, 4: 0}
     for pos in probOfPosition:
         board_copy_my = copy.deepcopy(board)
-        board_copy_my[pos[0]][pos[1]] = 1
-        type_list_my = pos_type_count(board_copy_my, pos, 'my')
+        board_copy_my[pos[0]][pos[1]] = turn
+        type_list_my = pos_type_count(board_copy_my, pos, turn_name[turn])
         if type_list_my['FIVE'] != 0:
             return pos  # rank 1 直接返回
         if type_list_my['FOUR'] != 0:
             rank[3] = pos
 
         board_copy_opponent = copy.deepcopy(board)
-        board_copy_opponent[pos[0]][pos[1]] = 2
-        type_list_opponent = pos_type_count(board_copy_opponent, pos, 'opponent')
+        board_copy_opponent[pos[0]][pos[1]] = 3-turn
+        type_list_opponent = pos_type_count(board_copy_opponent, pos, turn_name[3-turn])
         if type_list_opponent['FIVE'] != 0:
             rank[2] = pos
         if type_list_opponent['FOUR'] != 0:
