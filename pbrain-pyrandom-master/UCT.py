@@ -4,13 +4,12 @@
 # 使用说明：
 # 调用 UCT(board, action)，函数其中board和action为待模拟的棋盘和动作，输出reward
 
-import pp
 import random
 import itertools
 import copy
 import time
 import math
-# import pisqpipe as pp
+import pisqpipe as pp
 
 simulation_times = 200
 
