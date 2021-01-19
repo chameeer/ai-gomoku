@@ -25,7 +25,7 @@ MAX_BOARD = 20
 board = Board(MAX_BOARD)
 critic_network = CriticNetwork(params=[len(board.features)*5 + 2, 60, 1], pattern_finder=board.pattern_finder)
 
-# 读取之前训练好的layer
+# 读取之前训练好的layer,ce测试的时候路径可以写绝对的
 critic_network.layers = pickle.load(open(r"C:\Users\XMiPh\Desktop\ai-gomoku18\ai-gomoku\pbrain-pyrandom-master\critic_network_big", 'rb'))
 adjacent = []  # 邻近1格的空点
 
@@ -276,7 +276,7 @@ def brain_turn():
             # move = UCT.get_action()
             
             data = {}
-            availables = Adjacent_1(board)
+            availables = Adjacent(board)
             for move in availables:  # 选择胜率最高的着法
             # data[move] = (self.wins.get((1, move), 0) /
             # self.plays.get((1, move), 1)) + confront_heuristic(board, move[0], move[1], 1)/1000
@@ -284,17 +284,17 @@ def brain_turn():
                 board_copy[move[0]][move[1]] = 1
                 data[move] = critic_network.forward(board_copy)
             sorted_data = sorted(data.items(), key = lambda item:item[1], reverse = True)
-            
+
+            ## 这些是与HMCT 和 UCT 联合使用的代码
             # after_MCTS_data = {}
             # for i in range(0,4):
             #     move, win_probability = sorted_data[i]
-            #     # after_MCTS_data[move] = HMCT_heuristic(board, move[0], move[1])
-            #     after_MCTS_data[move] = UCT(board, move)
+            #     # after_MCTS_data[move] = HMCT_heuristic(board, move[0], move[1]) # hmct
+            #     after_MCTS_data[move] = UCT(board, move) #UCT
             # sorted_after_MCTS_data = sorted(after_MCTS_data.items(), key = lambda item:item[1], reverse = True)
             # final_move, win_prob = sorted_after_MCTS_data[0]
-            # final_move, win_prob = sorted_data[0]
-            x, y = random.randint(0, 20), random.randint(0, 20)
-            # x, y = final_move
+            final_move, win_prob = sorted_data[0]
+            x, y = final_move
         # logDebug((x,y))
         # heuristic = confront_heuristic(board, x, y, 1)
         # logDebug(my_heuristic(board, x, y, 1))

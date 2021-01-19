@@ -1,7 +1,8 @@
 from NeuralNetwork import *
-from Debug import logDebug
+# from Debug import logDebug
 import os
 import pickle
+import numpy as np
 
 class CriticNetwork():
     def __init__(self, params, pattern_finder):
